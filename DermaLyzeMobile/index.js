@@ -1,4 +1,5 @@
-import 'react-native-gesture-handler';
+// index.js
+import 'react-native-gesture-handler';               // ← En üstte olmalı
 import React from 'react';
 import { AppRegistry } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';

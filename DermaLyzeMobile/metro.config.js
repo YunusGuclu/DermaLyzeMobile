@@ -1,7 +1,16 @@
-const { getDefaultConfig } = require('@react-native/metro-config');
+// metro.config.js
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-module.exports = (() => {
-  const config = getDefaultConfig(__dirname);
-  config.resolver.assetExts.push('tflite', 'txt');
-  return config;
-})();
+// 1. Varsayılan config’i al
+const defaultConfig = getDefaultConfig(__dirname);
+
+module.exports = mergeConfig(defaultConfig, {
+  resolver: {
+    // varolan assetExts dizisine 'tflite' ve 'txt' ekliyoruz
+    assetExts: [
+      ...defaultConfig.resolver.assetExts,
+      'tflite',
+      'txt'
+    ]
+  }
+});

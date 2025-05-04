@@ -1,137 +1,119 @@
-// src/screens/AnalyzeScreen.js
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  Button,
-  StyleSheet,
-  Alert,
-  FlatList
+  View, Text, Button, Image, StyleSheet,
+  ActivityIndicator, ScrollView, TouchableOpacity
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import ImageResizer from 'react-native-image-resizer';
-import RNFS from 'react-native-fs';
-import jpeg from 'jpeg-js';
-import { loadTensorflowModel } from 'react-native-fast-tflite';
+import { useNavigation } from '@react-navigation/native';
 
-// Modelin beklediği sınıf etiketleri:
-const LABELS = [
-  'Melanositik Nevüs',
-  'Melanom',
-  'Benign Keratoz Benzeri Lezyon',
-  'Bazal Hücre Karsinomu',
-  'Aktinik Keratoz / İntraepitelyal Karsinom',
-];
+export default function AnalysisScreen() {
+  const navigation = useNavigation();
+  const [imageUri, setImageUri] = useState(null);
+  const [results, setResults]   = useState([]);
+  const [loading, setLoading]   = useState(false);
 
-export default function AnalyzeScreen() {
-  const [model, setModel] = useState(null);
-  const [predictions, setPredictions] = useState([]);
-  const [photoUri, setPhotoUri] = useState(null);
-  const WIDTH = 224, HEIGHT = 224;
-
-  // 1️⃣ Modeli yükle
-  useEffect(() => {
-    (async () => {
-      try {
-        const m = await loadTensorflowModel(
-          require('../assets/models/model.tflite')
-        );
-        setModel(m);
-        console.log('✅ Model yüklendi');
-      } catch (e) {
-        console.error('❌ Model yükleme hatası', e);
-        Alert.alert('Hata', 'Model yüklenemedi: ' + e.message);
-      }
-    })();
-  }, []);
-
-  const analyze = async () => {
-    if (!model) {
-      return Alert.alert('Model henüz yüklenmedi.');
-    }
-
-    // 2️⃣ Fotoğraf seç
+  const pickImage = async () => {
     const res = await launchImageLibrary({ mediaType: 'photo' });
-    const uri = res.assets?.[0]?.uri;
-    if (!uri) return;
-    setPhotoUri(uri);
+    if (res.didCancel || !res.assets?.length) return;
+    const uri = res.assets[0].uri;
+    setImageUri(uri);
+    uploadImage(uri);
+  };
 
+  const uploadImage = async (uri) => {
+    setLoading(true);
+    const form = new FormData();
+    form.append('image', { uri, name: 'photo.jpg', type: 'image/jpeg' });
     try {
-      // 3️⃣ 224×224 boyutuna küçült
-      const { uri: resizedUri } = await ImageResizer.createResizedImage(
-        uri, WIDTH, HEIGHT, 'JPEG', 100
-      );
-
-      // 4️⃣ Dosyayı base64 olarak oku
-      const b64 = await RNFS.readFile(resizedUri, 'base64');
-      const raw = jpeg.decode(Buffer.from(b64, 'base64'));
-
-      // 5️⃣ RGBA → RGB Uint8Array çevir
-      const buffer = new Uint8Array(WIDTH * HEIGHT * 3);
-      for (let i = 0; i < WIDTH * HEIGHT; i++) {
-        buffer[i * 3 + 0] = raw.data[i * 4 + 0]; // R
-        buffer[i * 3 + 1] = raw.data[i * 4 + 1]; // G
-        buffer[i * 3 + 2] = raw.data[i * 4 + 2]; // B
-      }
-
-      // 6️⃣ Modeli çalıştır, çıktı array’ini al
-      const out = await model.run(buffer); 
-      // out örn. [0.02, 0.85, 0.01, 0.10, 0.02]
-
-      // 7️⃣ Etiketlerle eşleştir ve % olarak sırala
-      const preds = out
-        .map((p, i) => ({
-          label: LABELS[i],
-          probability: (p * 100).toFixed(1) + '%'
-        }))
-        .sort((a, b) => parseFloat(b.probability) - parseFloat(a.probability));
-
-      setPredictions(preds);
-    } catch (e) {
-      console.error('❌ Analiz hatası', e);
-      Alert.alert('Analiz Hatası', e.message);
+      const response = await fetch('http://10.0.2.2:5000/predict', { method: 'POST', body: form });
+      const raw = await response.text();
+      console.log('⏺ RAW RESPONSE:', raw);
+      const data = JSON.parse(raw);
+      setResults(data);
+    } catch (err) {
+      console.error(err);
+      alert('Tahmin sırasında hata: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cilt Analizi</Text>
-      <Button title="Fotoğraf Seç & Analiz Et" onPress={analyze} />
-      {photoUri && (
-        <Image source={{ uri: photoUri }} style={styles.photo} />
-      )}
-      {predictions.length > 0 && (
-        <FlatList
-          data={predictions}
-          keyExtractor={(_, idx) => idx.toString()}
-          style={styles.list}
-          renderItem={({ item }) => (
-            <View style={styles.row}>
-              <Text style={styles.label}>{item.label}</Text>
-              <Text style={styles.prob}>{item.probability}</Text>
-            </View>
-          )}
-        />
-      )}
+    <View style={styles.root}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={styles.backText}>← Geri</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Cilt Analizi</Text>
+      </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Button title="Galeriden Cilt Fotoğrafı Seç" onPress={pickImage} />
+
+        {loading && <ActivityIndicator size="large" style={{ margin: 20 }} />}
+
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
+        )}
+
+        {results.length > 0 && (
+          <View style={styles.resultsCard}>
+            <Text style={styles.resultsHeader}>Tahmin Sonuçları:</Text>
+            {results.map((r, i) => (
+              <View key={i} style={styles.resultRow}>
+                <Text style={styles.resultLabel}>{r.label}</Text>
+                <Text style={styles.resultScore}>{(r.score * 100).toFixed(1)}%</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Yapay zekâ açıklaması ve uyarı */}
+        {results.length > 0 && (
+          <Text style={styles.disclaimer}>
+            Sonuçlar yapay zekâ tarafından belirlenmiştir. Lütfen tanı ve tedavi için doktorunuza danışın.
+          </Text>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', padding: 16, backgroundColor: '#FFF' },
-  title: { fontSize: 24, fontWeight: 'bold', marginVertical: 16 },
-  photo: { width: 200, height: 200, marginTop: 16, borderRadius: 8 },
-  list: { marginTop: 16, width: '100%' },
-  row: {
+  root: { flex: 1, backgroundColor: '#fefefe' },
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
+    alignItems: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgb(30,30,64)',
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderBottomColor: '#ddd'
   },
-  label: { fontSize: 16 },
-  prob: { fontSize: 16, fontWeight: 'bold' },
+  backBtn: { paddingRight: 16 },
+  backText: { fontSize: 16, color: '#fff' },
+  title: { fontSize: 18, fontWeight: '600', color: '#fff' },
+  container: { padding: 16, alignItems: 'center' },
+  preview: { width: '100%', height: 300, borderRadius: 12, marginVertical: 20 },
+  resultsCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3
+  },
+  resultsHeader: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: '#333' },
+  resultRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  resultLabel: { fontSize: 16, color: '#555' },
+  resultScore: { fontSize: 16, fontWeight: '500', color: '#000' },
+  disclaimer: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#888',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingHorizontal: 8
+  }
 });
