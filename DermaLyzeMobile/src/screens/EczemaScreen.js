@@ -1,4 +1,4 @@
-// src/screens/AcneScreen.js
+// src/screens/EczemaScreen.js
 import React, { useState } from 'react';
 import {
   View,
@@ -13,7 +13,7 @@ import {
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 
-export default function AcneScreen() {
+export default function EczemaScreen() {
   const navigation = useNavigation();
   const [imageUri, setImageUri] = useState(null);
   const [result, setResult]   = useState(null);
@@ -33,7 +33,7 @@ export default function AcneScreen() {
     const form = new FormData();
     form.append('image', { uri, name: 'photo.jpg', type: 'image/jpeg' });
     try {
-      const response = await fetch('http://10.0.2.2:5000/predict_acne', { method: 'POST', body: form });
+      const response = await fetch('http://10.0.2.2:5000/predict_atopic', { method: 'POST', body: form });
       if (!response.ok) throw new Error(`Sunucu hatası: ${response.status}`);
       const data = await response.json();
       setResult(data);
@@ -52,20 +52,20 @@ export default function AcneScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>AKNE ANALİZİ</Text>
+        <Text style={styles.navTitle}>EGZEMA ANALİZİ</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
         {/* Hero */}
         <ImageBackground
-          source={require('../assets/images/akne.png')}
+          source={require('../assets/images/DERMATOLOJI-banner.jpg')}
           style={styles.hero}
         >
           <View style={styles.overlay} />
           <View style={styles.textContainer}>
-            <Text style={styles.heroTitle}>AKNE ANALİZİ</Text>
+            <Text style={styles.heroTitle}>EGZEMA ANALİZİ</Text>
             <Text style={styles.heroSubtitle}>
-              Siyah nokta, beyaz sivilce,milia, rosecea, kist ya da papül vb. gibi bütün aknelerinizi tespit edin ve genel bilgiler alın.
+            Kuru, kaşıntılı, iltihaplı döküntüleri,kızarıklıkları analiz edin ve genel bilgiler alın.
             </Text>
           </View>
         </ImageBackground>
@@ -94,7 +94,7 @@ export default function AcneScreen() {
               </View>
               <Text style={styles.infoHeader}>Teşhis:</Text>
               <Text style={styles.infoText}>{result.diagnosis}</Text>
-              <Text style={styles.infoHeader}>Bilgi:</Text>
+              <Text style={styles.infoHeader}>Açıklama:</Text>
               <Text style={styles.infoText}>{result.info}</Text>
             </View>
           )}
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
   navTitle:     { fontSize: 18, fontWeight: '600', color: '#1F2937' },
 
   container:    { paddingBottom: 24 },
-  hero:         { width: '100%', height: 200, justifyContent: 'center' },
-  overlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
+  hero:         { width: '100%', height: 250, justifyContent: 'center' },
+  overlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
   textContainer:{ paddingHorizontal: 16 },
   heroTitle:    { color: 'white', fontSize: 28, fontWeight: '700', marginBottom: 4 },
   heroSubtitle: { color: 'white', fontSize: 16 },

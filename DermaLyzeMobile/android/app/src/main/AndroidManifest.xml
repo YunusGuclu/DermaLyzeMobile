@@ -25,7 +25,9 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="false"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        
 
         <!-- ==== GPU / NNAPI DELEGATE KÜTÜPHANELERİ (buraya taşıdık) ==== -->
         <uses-native-library android:name="libOpenCL.so" android:required="false" />

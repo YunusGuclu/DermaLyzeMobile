@@ -49,7 +49,7 @@ def predict():
 
 
 # --- 2) İkinci model (Acne.tflite) ---
-acne_interpreter = tf.lite.Interpreter(model_path="Acne.tflite")
+acne_interpreter = tf.lite.Interpreter(model_path="Acne.tflite", num_threads=1)
 acne_interpreter.allocate_tensors()
 acne_inp  = acne_interpreter.get_input_details()[0]
 acne_outp = acne_interpreter.get_output_details()[0]
@@ -65,64 +65,96 @@ label_map = {
 
 disease_info = {
     "Acne": (
-        "Teşhis: Deri yağ bezlerinin fazla sebum üretimi ve gözeneklerin tıkanması sonucu siyah nokta, beyaz nokta, papül ve püstüller oluşur.",
-        "Bilgi: Ergenlik döneminde hormon dalgalanmalarıyla tetiklenir; genetik yatkınlık, stres ve beslenme de rol oynar. Topikal retinoidler, antibakteriyel losyonlar ve cilt temizliği tedavinin temelini oluşturur."
+        "Teşhis: Deri yağ bezlerinin aşırı sebum üretimi ve gözeneklerin tıkanması sonucu, "
+        "Propionibacterium acnes (Cutibacterium acnes) bakterisinin çoğalmasıyla birlikte siyah "
+        "nokta (open komedon), beyaz nokta (closed komedon), papül, püstül, nodül ve skarlı lezyonların "
+        "karışık formda görüldüğü, inflamatuar ve non-inflamatuar bileşenlerin bir arada bulunduğu kronik "
+        "deri hastalığıdır.\n",
+        "Bilgi: Ergenlik dönemindeki hormonal değişiklikler başlıca tetikleyicidir; genetik yatkınlık, stres, "
+        "beslenme alışkanlıkları ve kozmetik ürün kullanımı da rol oynar. Tedavi; topikal retinoidler, "
+        "benzoil peroksit, antibakteriyel losyonlar, sistemik antibiyotikler ve gerektiğinde hormon düzenleyici "
+        "ilaç kombinasyonları ile yürütülür."
     ),
     "Acne Infantile": (
-        "Teşhis: Yenidoğan ve bebeklik döneminde görülen papül-püstüller, nadiren nodül ve kistler oluşturabilir.",
-        "Bilgi: Genellikle bir-üç aylıkken başlar, çoğu bebekte 6 aya kadar kendiliğinden geriler. Bol temiz hava, nazik cilt bakımı ve gerekirse dermatolog kontrolü önerilir."
+        "Teşhis: Yenidoğan ve bebeklik döneminde, maternal hormonların etkisiyle yüz ve gövdede papül-püstüller, "
+        "nadir olarak nodül ve kistik lezyonlar formunda ortaya çıkan, genellikle kendiliğinden gerileyen akne türüdür.\n",
+        "Bilgi: Çoğunlukla 1–3 aylıkken başlar ve 6 aya kadar geriler. Tedavi gerektirmeyen hafif seyirli bir formdur; "
+        "bol temiz hava, nazik cilt bakımı ve sadece gerekli durumlarda dermatolog önerisi ile lokal tedavi uygulanır."
     ),
     "Acne Open Comedo": (
-        "Teşhis: Gözenek tıkanıklığındaki oksidasyonla kararan sebum tıkaçları (siyah noktalar).",
-        "Bilgi: Hafif akne formudur, düzenli exfoliasyon ve salisilik asit içeren ürünlerle önlenebilir. Derin lezyonlara ilerlemeden müdahale edilmesi önerilir."
+        "Teşhis: Gözenek tıkanıklığındaki oksidasyon sonucu melanin ve lipidlerin koyulaşmasıyla oluşan açık komedonlar "
+        "(siyah noktalar) ile karakterizedir; inflamasyon yok denecek kadar azdır.\n",
+        "Bilgi: Hafif akne formudur; düzenli eksfoliasyon, salisilik asit içeren tonikler ve nazik temizleyiciler "
+        "ile önlenebilir. Derin lezyonlara ilerlemeden erken müdahale önerilir."
     ),
     "Acne Steroid": (
-        "Teşhis: Topikal veya sistemik kortikosteroid kullanımına bağlı, nodüler ve kistik lezyonlar.",
-        "Bilgi: Steroid dozu azaltılmalı, hormonal düzeyler izlenmeli, alternatif anti-enflamatuar tedaviler değerlendirilmeli."
+        "Teşhis: Topikal veya sistemik kortikosteroid kullanımına bağlı olarak yüz, gövde ve sırt bölgelerinde "
+        "gelişen nodüler ve kistik püstüllerle seyreden, steroide bağlı akneiform dermatit formudur.\n",
+        "Bilgi: Steroid dozu azaltılmalı, rejeneratif topikal tedaviler ve alternatif anti-inflamatuar ajanlar "
+        "değerlendirilmelidir; kalıcı skarlar için dermatolojik girişimler gerekebilir."
     ),
     "Acne conglobata": (
-        "Teşhis: Derin skarlı, fistüllü nodüllerle seyreden, en ağır akne tiplerinden biri.",
-        "Bilgi: Genç erişkin erkeklerde yaygın; sistemik retinoidler ve antibiyotik kombinasyonları sıklıkla kullanılır. Erken ve agresif tedavi skarları azaltır."
+        "Teşhis: Derin yerleşimli, fistüllü nodüller, abseler ve skar dokusuyla karakterize, en ağır akne formudur.\n",
+        "Bilgi: Özellikle genç erişkin erkeklerde görülür; sistemik retinoidler, antibiyotik kombinasyonları ve "
+        "biyolojik ajanlar gerekebilir; erken ve agresif tedavi, skar oluşumunu azaltır."
     ),
     "Acne excoriée": (
-        "Teşhis: Takıntılı kaşıma ve sıkma nedeniyle erozyon, skar ve pigment değişiklikleri.",
-        "Bilgi: Psikolojik faktörler (anksiyete, obsesif davranış) ön planda; dermatolog ve psikolog iş birliğiyle hem topikal hem davranışsal müdahale gerekir."
+        "Teşhis: Psikolojik nedenlerle (anksiyete, obsesif davranış) sürekli sıkma ve kaşıma sonucu erozyon, "
+        "kızarıklık, skar ve pigment değişiklikleri gelişen, kendini travma ile sürdüren kronik akne formudur.\n",
+        "Bilgi: Dermatolog ve psikolog iş birliğiyle hem topikal hem davranışsal terapi yaklaşımları uygulanır."
     ),
     "Acne keloidalis nuchae": (
-        "Teşhis: Ense kökünde sert, keloid benzeri nodüller ve skar dokusu.",
-        "Bilgi: Sıkı saç kesimi, dar giyim ve travma tetikleyebilir. Siyah ırkta daha sık görülür. Cerrahi eksizyon ve intralezyonal kortikosteroid enjeksiyonları tedavide kullanılır."
+        "Teşhis: Ense kökündeki kıl foliküllerinin kronik inflamasyonu ve skar dokusu ile keloid benzeri nodüller "
+        "oluşmasıdır.\n",
+        "Bilgi: Sıkı saç kesimi, travma ve genetik yatkınlık tetikleyebilir; cerrahi eksizyon ve intralezyonal "
+        "kortikosteroid enjeksiyonları tedavide etkilidir."
     ),
     "Acne vulgaris": (
-        "Teşhis: Papül, püstül, kistik lezyonlar ve komedonların karışık formu.",
-        "Bilgi: Ergenlik döneminin tipik hastalığıdır; cilt bariyerini koruyan nazik temizleyiciler, topikal retinoidler ve antibiyotikler kombinasyonuyla kontrol altına alınır."
+        "Teşhis: Papül, püstül, kistik lezyon ve komedonların bir arada bulunduğu, orta şiddetten şiddetliye kadar "
+        "farklı şiddet seviyelerinde görülen yaygın akne formudur.\n",
+        "Bilgi: Nazik temizleyiciler, topikal retinoidler ve antibiyotikler kombinasyonu ile tedavi edilir; "
+        "ağır vakalarda sistemik ajanlar gerekebilir."
     ),
     "Hidradenitis suppurativa": (
-        "Teşhis: Aksilla, kasık ve gluteal bölgede tekrar eden apse ve fistülsel lezyonlar.",
-        "Bilgi: Kronik ilerleyici; diyet, hijyen, antibiyotik ve biyolojik ajanlar uzun süreli remisyon sağlar. Cerrahi de gerekebilir."
+        "Teşhis: Aksilla, kasık ve gluteal bölge gibi apokrin bezlerin yoğun olduğu alanlarda kronik, "
+        "tekrarlayan ağrılı nodül, apse ve fistüllerle seyreden inflamatuar dermatozdur.\n",
+        "Bilgi: Diyet düzenlemesi, hijyen önlemleri, uzun süreli antibiyotikler, biyolojik ajanlar ve gerektiğinde "
+        "cerrahi müdahale kullanılır."
     ),
     "Hyperhidrosis": (
-        "Teşhis: Eli, ayakları veya koltuk altlarını etkileyen aşırı terleme.",
-        "Bilgi: Sosyal ve mesleki yaşamı etkiler. Antiperspiran kremler, iyontoforez, botulinum toksini enjeksiyonları veya sinir cerrahisi seçenekleri bulunur."
+        "Teşhis: Ekrin ter bezlerinin aşırı uyarılması sonucu ellerde, ayaklarda veya koltuk altlarında "
+        "gözle görülür derecede terleme ataklarının oluştuğu durumdur.\n",
+        "Bilgi: Sosyal ve mesleki yaşamı etkiler; antiperspiranlar, iyontoforez, botulinum toksini enjeksiyonları veya "
+        "sympathectomy seçenekleri bulunmaktadır."
     ),
     "Milia": (
-        "Teşhis: Yüzde 1–2 mm, beyaz veya sarı keratin dolu kistler.",
-        "Bilgi: Yenidoğanlarda %40’a varan sıklıkla görülür; müdahale gerektirmez. Yetişkinde travma veya sürfaktan kullanımından sonra ortaya çıkabilir, basit ekstraksiyonla giderilir."
+        "Teşhis: Yüz bölgesinde epidermal keratin tıkaçlarının kistik formda 1–2 mm çapında beyaz ya da sarı "
+        "görünümlü kabarcıklar oluşturmasıdır.\n",
+        "Bilgi: Yenidoğanlarda fizyolojik, müdahalesiz izlenir; erişkinlerde basit ekstraksiyon veya lazer tedavileri "
+        "uygulanabilir."
     ),
     "Minocycline Pigmentation": (
-        "Teşhis: Minosiklin uzun süreli kullanımında deri, diş ve mukozada mavi-siyah pigment birikimi.",
-        "Bilgi: İlacın kesilmesi zamanla renk solmasına yol açar; kalıcı skar riski düşüktür. Alternatif antibiyotik değerlendirilir."
+        "Teşhis: Uzun süreli minosiklin kullanımına bağlı olarak deri, diş ve mukozada mavi-siyah renk değişiklikleri "
+        "oluşmasıdır.\n",
+        "Bilgi: İlacın kesilmesiyle kademeli olarak geriler; kalıcı pigmentasyon nadiren kalıcı skar bırakır."
     ),
     "Perioral Dermatitis": (
-        "Teşhis: Ağız ve nazolabial bölgede eritemli papül-püstüller, bazen kaşıntılı.",
-        "Bilgi: Topikal steroidler kötüleştirir. Metronidazol, pimekrolimus veya düşük doz oral tetrasiklinler etkilidir."
+        "Teşhis: Ağız çevresi ve nazolabial bölgede eritemli papül-püstüller, bazen hafif kaşıntı ile seyreden "
+        "spongioform lezyonlardır.\n",
+        "Bilgi: Topikal steroidler durdurulmalı; metronidazol, pimekrolimus veya düşük doz oral tetrasiklinler etkili "
+        "olur."
     ),
     "Pomade acne": (
-        "Teşhis: Saç ürünlerinin alın bölgesine yayılması sonucu komedon ve papüller.",
-        "Bilgi: Yağsız, non-komedojenik ürünler tercih edilmeli; bölge temizliği ve topikal salisilik asit fayda sağlar."
+        "Teşhis: Yağlı kozmetik ürünlerin (pomad, pomat) alın ve çene hattına yayılması sonucu komedon ve papül "
+        "lezyonlarının gelişmesidir.\n",
+        "Bilgi: Non-komedojenik ürünler tercih edilmeli, bölge temizliği ve salisilik asit içeren topikal ajanlar "
+        "kullanılmalıdır."
     ),
     "Rosacea": (
-        "Teşhis: Yüzde orta hatta eritem, telanjiektazi, papül-püstüller ve bazen göz tutulumu.",
-        "Bilgi: Alevlendiriciler arasında güneş, sıcak içecek, alkol bulunur. Topikal metronidazol, azelaik asit ve oral antibiyotiklerle kontrol sağlanır."
+        "Teşhis: Yüz merkezi bölgede eritem, teleangiektazi, papül-püstüller ve alevlenme atakları ile birlikte "
+        "göz tutulumunun da görülebildiği kronik inflamatuar dermatozdur.\n",
+        "Bilgi: Alevlendiriciler arasında güneş, sıcak içecek ve alkol bulunur; topikal metronidazol, azelaik asit "
+        "ve oral antibiyotiklerle kontrol sağlanır."
     ),
 }
 
@@ -133,10 +165,16 @@ def predict_acne():
         if 'image' not in request.files:
             return jsonify({"error": "no image"}), 400
 
-        file = request.files['image'].read()
-        img = Image.open(io.BytesIO(file)).convert('RGB')
-        arr = np.array(img.resize((acne_w, acne_h)), dtype=np.float32) / 255.0
-        arr = np.expand_dims(arr, axis=0)
+        # Colab ile birebir preprocessing:
+        file_bytes = request.files['image'].read()
+        img_tensor = tf.io.decode_image(file_bytes, channels=3)
+        img_resized = tf.image.resize(
+            img_tensor,
+            [acne_h, acne_w],
+            method=tf.image.ResizeMethod.BILINEAR
+        )
+        img_norm = tf.cast(img_resized, tf.float32) / 255.0
+        arr = tf.expand_dims(img_norm, axis=0).numpy()
 
         acne_interpreter.set_tensor(acne_inp['index'], arr)
         acne_interpreter.invoke()
@@ -145,7 +183,126 @@ def predict_acne():
         idx   = int(np.argmax(preds))
         label = label_map[idx]
         score = float(preds[idx])
-        diag, info = disease_info.get(label, ("", ""))
+        diag, info = disease_info[label]
+
+        return jsonify({
+            "label":     label,
+            "score":     score,
+            "diagnosis": diag,
+            "info":      info
+        })
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error"}), 500
+
+
+# --- 3) Üçüncü model (Atopic Dermatitis.tflite) ---
+det_interpreter = tf.lite.Interpreter(model_path="Atopic Dermatitis.tflite")
+det_interpreter.allocate_tensors()
+det_inp, det_out = det_interpreter.get_input_details()[0], det_interpreter.get_output_details()[0]
+_, det_H, det_W, _ = det_inp['shape']
+det_dtype        = det_inp['dtype']
+det_scale, det_zp = det_inp.get('quantization', (0, 0))
+
+label_map_det = {
+    0: "Acquired ichthyosis - Adult",
+    1: "Atopic Dermatitis Adult Phase",
+    2: "Atopic Dermatitis Childhood Phase",
+    3: "Atopic Dermatitis Feet",
+    4: "Atopic Dermatitis Hyperlinear Creases",
+    5: "Ichthyosis vulgaris",
+    6: "Keratosis Pilaris",
+    7: "Lamellar ichthyosis - Adult",
+    8: "Pityriasis Alba"
+}
+
+disease_info_det = {
+    "Acquired ichthyosis - Adult": (
+        "Teşhis: Yetişkinlerde genellikle hematolojik maligniteler, tiroid bozuklukları veya HIV gibi sistemik hastalıklarla ilişkili, simetrik olarak tüm vücutta ortaya çıkan ince beyaz-gri pul pul döküntüler ve belirgin deri kalınlaşmasıyla karakterizedir. Özellikle ekstremitelerin ekstensor yüzeylerinde yoğunlaşır; kaşıntı ve gerilme hissi eşlik edebilir.\n",
+        "Bilgi: Genetik yatkınlık veya metabolik bozukluklarla ilişkili olabilir; topikal keratolitikler ve yoğun nemlendiriciler uzun süreli kontrol sağlar."
+    ),
+    "Atopic Dermatitis Adult Phase": (
+        "Teşhis: Yetişkinlerde kronik, tekrarlayıcı kaşıntılı, inflamatuar eczematoid plaklar şeklinde seyreder. Likenifikasyon (kalınlaşmış deri çizgileri), postinflamatuar hiperpigmentasyon ve fissürler görülebilir; sıklıkla boyun, dirsek içi ve diz arkalarında lokalizedir.\n",
+        "Bilgi: Kuru cilt ve alerjenlere aşırı duyarlılık temel rol oynar; cilt bariyerini onaran nemlendiriciler ve düşük-orta potentli topikal kortikosteroidler önerilir."
+    ),
+    "Atopic Dermatitis Childhood Phase": (
+        "Teşhis: Çocukluk döneminde özellikle yanaklar, alın ve eklem kıvrımlarında eritemli, sulu, kaşıntılı lezyonlar şeklinde başlar. Sıklıkla eksüda ve kabuklanma eşlik eder; gece kaşıntısı uykuyu bölebilir.\n",
+        "Bilgi: Genetik faktörler ve çevresel tetikleyiciler önemli; nazik cilt bakımı, pimekrolimus ve gerektiğinde sistemik antihistaminikler faydalıdır."
+    ),
+    "Atopic Dermatitis Feet": (
+        "Teşhis: Ayak tabanı ve topuk bölgesinde yoğun hiperkeratoz, derin çatlaklar (fissürler) ve şiddetli kaşıntıyla giden kronik plaklar görülür. Fissürler ağrılı olabilir ve sekundair enfeksiyon riskini artırır.\n",
+        "Bilgi: Nem kaybı ve sürtünme alevlendirir; keratolitik pedler, seramidler içeren kremler ve ayak hijyenine özen tedaviye katkı sağlar."
+    ),
+    "Atopic Dermatitis Hyperlinear Creases": (
+        "Teşhis: Cilt bariyerinni bozulması, avuç içi ve parmak eklemlerinde normalden daha derin ve belirgin çizgiler (hiperlinear kıvrımlar) eşliğinde atopik dermatit bulguları bulunur. Bu çizgiler kuruluk ve çatlak oluşturarak ağrıya yol açabilir.\n",
+        "Bilgi: Cilt bariyerinin bozulması sonucu oluşur; yoğun nemlendirici uygulamaları ve xerozis kontrolü tedavide anahtar rol oynar."
+    ),
+    "Ichthyosis vulgaris": (
+        "Teşhis: Deride yaygın, ince pul pul dökülme ve sıkılaşmış, derin çatlaklar ile karakterizedir. Özellikle alt bacaklarda, kolların posterior yüzeyinde ve sırt üstünde belirgindir; palmar hiperlinearizasyon görülebilir.\n",
+        "Bilgi: Filaggrin gen mutasyonlarına bağlı gelişir; haftalık keratolitik tedavi ve günlük yoğun nemlendirme uzun süreli rahatlama sağlar."
+    ),
+    "Keratosis Pilaris": (
+        "Teşhis: Vücutta,Üst kol, yanak ve uyluk bölgesinde, folikül girişlerinde çevresel kızarıklıkla birlikte pütürlü, 1–2 mm papüller (tavuk derisi görünümü) şeklinde görülür. Hafif kaşıntı eşlik edebilir.\n",
+        "Bilgi: Genellikle ergenlik döneminde belirginleşir; üre veya alfa hidroksi asit içeren losyonlar ve nazik eksfoliasyon etkilidir."
+    ),
+    "Lamellar ichthyosis - Adult": (
+        "Teşhis: Doğuştan itibaren var olan, kalın, yapışkan lameller pullar ve yaygın cilt kuruluğu ile seyreder. Bebeklikte 'collodion baby' tablosu gözlenebilir; pullar koyu kahverengi ve geniş plaklar oluşturur.\n",
+        "Bilgi: Doğuştan gelen genetik bir bozukluktur; oral retinoidler, lipid bazlı nemlendiriciler ve keratolitikler tedavide kullanılır."
+    ),
+    "Pityriasis Alba": (
+        "Teşhis: Çocukluk ve adolesan dönemde sıklıkla yüzde, üst kol ve gövde üst kısmında hipopigmente, hafif pul pul döküntüler ve silik sınırlarla karakterizedir. Yaz aylarında daha belirgin hale gelebilir.\n",
+        "Bilgi: Atopik dermatit alt tipi olabilir; düzenli nemlendirici kullanımı ve düşük potentli topikal steroidlerle semptomlar hafifler."
+    ),
+}
+
+
+def softmax(logits):
+    e = np.exp(logits - np.max(logits))
+    return e / np.sum(e)
+
+@app.route('/predict_atopic', methods=['POST'])
+def predict_atopic():
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "no image"}), 400
+
+        raw = request.files['image'].read()
+        # 1) Byte’ları TF tensor’e çevir (EXIF yönü de düzelir)
+        img_tensor = tf.io.decode_image(raw, channels=3)
+        # 2) BILINEAR resize Colab’la birebir
+        img_resized = tf.image.resize(
+            img_tensor,
+            [det_H, det_W],
+            method=tf.image.ResizeMethod.BILINEAR
+        )
+        # 3) float32 normalize
+        base = tf.cast(img_resized, tf.float32) / 255.0
+        base = base.numpy()
+
+        # Test-Time Augmentations
+        transforms = [
+            lambda x: x,
+            lambda x: x[:, ::-1, :],
+            lambda x: x[::-1, :, :]
+        ]
+
+        preds_sum = np.zeros(len(label_map_det), dtype=np.float32)
+        for fn in transforms:
+            x_in = fn(base)
+            x_in = np.expand_dims(x_in, 0).astype(np.float32)
+            if det_dtype == np.uint8 and det_scale > 0:
+                x_in = (x_in / det_scale + det_zp).astype(np.uint8)
+            det_interpreter.set_tensor(det_inp['index'], x_in)
+            det_interpreter.invoke()
+            preds_sum += det_interpreter.get_tensor(det_out['index'])[0]
+
+        preds_avg = preds_sum / len(transforms)
+        preds = softmax(preds_avg) if not np.allclose(preds_avg.sum(), 1.0, atol=1e-2) else preds_avg
+
+        idx   = int(np.argmax(preds))
+        label = label_map_det[idx]
+        score = float(preds[idx])
+        diag, info = disease_info_det.get(label, ("", ""))
 
         return jsonify({
             "label": label,
@@ -158,3 +315,6 @@ def predict_acne():
         return jsonify({"error": "Internal server error"}), 500
 
 
+if __name__ == '__main__':
+    # debug=True ile terminalde traceback görebilirsiniz
+    app.run(host='0.0.0.0', port=5000, debug=True)

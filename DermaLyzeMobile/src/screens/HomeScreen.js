@@ -1,5 +1,5 @@
 // src/screens/HomeScreen.js
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,43 +8,27 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Animated,
-  Easing,
   Platform,
 } from 'react-native';
 
+// Static imports for images to avoid require path issues
+const heroImg      = require('../assets/images/360_F_1002528808_bJI4Gn2lusUNarSS7ZYCTeE5DUr0qMWL.jpg');
+const assistantImg = require('../assets/images/360_F_619411419_TI1j5q8ItTz6VTFxFtSUm0m8n5wYSWNy.jpg');
+const skinImg      = require('../assets/images/depositphotos_254341448-stock-photo-face-beautiful-girl-scanning-g.jpg');
+const dermImg      = require('../assets/images/360_F_283884186_YBKqPDaRmGJ0eh3nu6ZOcq6yvvO8NzLm.jpg');
+const logoImg      = require('../assets/images/6025105.png');
+const linkedInIcon = require('../assets/images/LinkedIn_icon.png');
+const githubIcon   = require('../assets/images/github-icon-2.png');
+
 export default function HomeScreen({ navigation }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuAnim = useRef(new Animated.Value(0)).current;
-
-  const toggleMenu = () => {
-    Animated.timing(menuAnim, {
-      toValue: menuOpen ? 0 : 1,
-      duration: 300,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
-    setMenuOpen(!menuOpen);
-  };
-
-  const scaleY = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-  const opacity = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
 
   return (
     <ScrollView style={styles.container}>
       {/* Navbar */}
       <View style={styles.navbar}>
         <View style={styles.logoWrap}>
-          <Image
-            source={require('../assets/images/6025105.png')}
-            style={styles.logo}
-          />
+          <Image source={logoImg} style={styles.logo} />
           <Text style={styles.title}>DermaLyze</Text>
         </View>
         <View style={styles.links}>
@@ -54,212 +38,169 @@ export default function HomeScreen({ navigation }) {
 
           {/* Analiz Dropdown */}
           <View style={styles.menuWrap}>
-            <TouchableOpacity onPress={toggleMenu}>
+            <TouchableOpacity onPress={() => setMenuOpen(o => !o)}>
               <Text style={styles.linkText}>Analiz ▾</Text>
             </TouchableOpacity>
-            <Animated.View
-              style={[
-                styles.dropdown,
-                { opacity, transform: [{ scaleY }] },
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  toggleMenu();
-                  navigation.navigate('Analysis');
-                }}
-              >
-                <Text style={styles.dropdownText}>Cilt Analizi</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  toggleMenu();
-                  navigation.navigate('Skin');
-                }}
-              >
-                <Text style={styles.dropdownText}>Deri Analizi</Text>
-              </TouchableOpacity>
-            </Animated.View>
+
+            {menuOpen && (
+              <View style={styles.dropdown}>
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setMenuOpen(false);
+                    navigation.navigate('Analysis');
+                  }}
+                >
+                  <Text style={styles.dropdownText} numberOfLines={1}>
+                    Cilt Analizi
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setMenuOpen(false);
+                    navigation.navigate('Skin');
+                  }}
+                >
+                  <Text style={styles.dropdownText} numberOfLines={1}>
+                    Deri Analizi
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </View>
 
       {/* Hero */}
-      <ImageBackground
-        source={require('../assets/images/360_F_1002528808_bJI4Gn2lusUNarSS7ZYCTeE5DUr0qMWL.jpg')}
-        style={styles.hero}
-      >
+      <ImageBackground source={heroImg} style={styles.hero}>
         <View style={styles.overlay} />
-        <Text style={styles.heroTitle}>HOŞGELDİNİZ</Text>
-        <Text style={styles.heroSubtitle}>
-          DermaLyze ile Cildinizi Keşfedin
-        </Text>
+        <View style={styles.heroContent}>
+          <Text style={styles.heroTitle}>HOŞGELDİNİZ!</Text>
+          <Text style={styles.heroSubtitle}>DermaLyze ile Cildinizi Keşfedin</Text>
+        </View>
       </ImageBackground>
 
-      {/* Bölümler */}
-      <View style={styles.section}>
-        <ImageBackground
-          source={require('../assets/images/360_F_619411419_TI1j5q8ItTz6VTFxFtSUm0m8n5wYSWNy.jpg')}
-          style={styles.card}
-        >
-          <View style={styles.cardOverlay} />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>SAĞLIK ASİSTANIM</Text>
-            <Text style={styles.cardDesc}>
-              Akıllı sağlık asistanımıza danışarak hızlı yanıtlar alın.
-            </Text>
-            <TouchableOpacity
-              style={styles.cardBtn}
-              onPress={() => navigation.navigate('Assistant')}
-            >
-              <Text style={styles.btnText}>Sağlık Asistanım</Text>
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
-      </View>
+      {/* Sections */}
+      <View style={styles.sectionContainer}>
+        {/* Sağlık Asistanım Card */}
+        <View style={styles.section}>
+          <ImageBackground source={assistantImg} style={styles.card}>
+            <View style={styles.cardOverlay} />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>SAĞLIK ASISTANIM</Text>
+              <Text style={styles.cardDesc}>
+                Akıllı sağlık asistanımıza danışarak hızlı yanıtlar alın.
+              </Text>
+              <TouchableOpacity
+                style={styles.cardBtn}
+                onPress={() => navigation.navigate('Assistant')}
+              >
+                <Text style={styles.btnText}>Sağlık Asistanım →</Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        </View>
 
-      <View style={styles.section}>
-        <ImageBackground
-          source={require('../assets/images/depositphotos_254341448-stock-photo-face-beautiful-girl-scanning-g.jpg')}
-          style={styles.card}
-        >
-          <View style={styles.cardOverlay} />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>CİLT ANALİZİ</Text>
-            <Text style={styles.cardDesc}>
-Cildinizden şüpheleniyor musunuz? AI ile cildinizdeki potansiyel riskleri tespit edin ve genel sağlık durumunuz hakkında bilgi edinin.
-            </Text>
-            <TouchableOpacity
-              style={styles.cardBtn}
-              onPress={() => navigation.navigate('Analysis')}
-            >
-              <Text style={styles.btnText}>Cilt Analizi</Text>
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
-      </View>
+        {/* Cilt Analizi Card */}
+        <View style={styles.section}>
+          <ImageBackground source={skinImg} style={styles.card}>
+            <View style={styles.cardOverlay} />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>CİLT ANALİZİ</Text>
+              <Text style={styles.cardDesc}>
+                AI ile cildinizdeki potansiyel riskleri tespit edin.
+              </Text>
+              <TouchableOpacity
+                style={styles.cardBtn}
+                onPress={() => navigation.navigate('Analysis')}
+              >
+                <Text style={styles.btnText}>Cilt Analizi →</Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        </View>
 
-      <View style={styles.section}>
-        <ImageBackground
-          source={require('../assets/images/360_F_283884186_YBKqPDaRmGJ0eh3nu6ZOcq6yvvO8NzLm.jpg')}
-          style={styles.card}
-        >
-          <View style={styles.cardOverlay} />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>DERİ ANALİZİ</Text>
-            <Text style={styles.cardDesc}>
-              Akne veya Egzemalarınız mı var? 
-              AI ile cildinizdeki akne veya egzema rahatsızlıklarını tespit edin; belirtileriniz hakkında ayrıntılı bilgi edinin
-            </Text>
-            <TouchableOpacity
-              style={styles.cardBtn}
-              onPress={() => navigation.navigate('Skin')}
-            >
-              <Text style={styles.btnText}>Deri Analizi</Text>
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
+        {/* Deri Analizi Card */}
+        <View style={styles.section}>
+          <ImageBackground source={dermImg} style={styles.card}>
+            <View style={styles.cardOverlay} />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>DERİ ANALİZİ</Text>
+              <Text style={styles.cardDesc}>Akne veya egzema analizine göz atın.</Text>
+              <TouchableOpacity
+                style={styles.cardBtn}
+                onPress={() => navigation.navigate('Skin')}
+              >
+                <Text style={styles.btnText}>Deri Analizi →</Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        </View>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Image
-          source={require('../assets/images/LinkedIn_icon.png')}
-          style={styles.icon}
-        />
-        <Image
-          source={require('../assets/images/github-icon-2.png')}
-          style={styles.icon}
-        />
-        <Text style={styles.copy}>@ 2025 Copyright: Yunus Güçlü</Text>
+        <Image source={linkedInIcon} style={styles.icon} />
+        <Image source={githubIcon} style={styles.icon} />
+        <Text style={styles.copy}>&copy; 2025 Yunus Güçlü</Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  navbar: {
-    flexDirection: 'row',
-    padding: 12,
-    backgroundColor: 'rgb(30,30,64)',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    zIndex: 10,
-  },
-  logoWrap: { flexDirection: 'row', alignItems: 'center' },
-  logo: { width: 40, height: 40 },
-  title: { color: '#fff', fontSize: 20, marginLeft: 8 },
-  links: { flexDirection: 'row', alignItems: 'center' },
-  linkText: { color: '#fff', marginHorizontal: 10, fontSize: 16 },
-
-  menuWrap: { position: 'relative' },
-  dropdown: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 32 : 36,
-    right: 0,
-    width: 150,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    transform: [{ scaleY: 0 }],
-    transformOrigin: 'top',
-    zIndex: 100,
-  },
-  dropdownItem: {
-    height: 40,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-  },
-  dropdownText: { fontSize: 16, color: '#333' },
-
-  hero: { width: '100%', height: 250, justifyContent: 'center' },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(30,30,64,0.5)',
-  },
-  heroTitle: { color: '#fff', fontSize: 28, marginLeft: 20 },
-  heroSubtitle: { color: '#fff', fontSize: 18, marginLeft: 20, marginTop: 4 },
-
-  section: { marginVertical: 12, paddingHorizontal: 12 },
-  card: {
-    width: '100%',
-    height: 200,
-    borderRadius: 20,
-    overflow: 'hidden',
-    justifyContent: 'flex-end',
-  },
-  cardOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  cardContent: { padding: 16 },
-  cardTitle: { color: '#fff', fontSize: 22, fontWeight: '600' },
-  cardDesc: { color: '#fff', fontSize: 14, marginVertical: 8 },
-
-  cardBtn: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgb(20,20,65)',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 25,
-  },
-  btnText: { color: '#fff', fontSize: 16 },
-
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'rgb(20,20,65)',
-  },
-  icon: { width: 30, height: 30, marginHorizontal: 8 },
-  copy: { color: '#fff', marginLeft: 12 },
+  container:        { backgroundColor: '#F9FAFB' },
+  navbar:           {
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      backgroundColor: 'white',
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      elevation: 3,
+                      zIndex: 10,
+                    },
+  logoWrap:         { flexDirection: 'row', alignItems: 'center' },
+  logo:             { width: 40, height: 40 },
+  title:            { marginLeft: 8, fontSize: 20, fontWeight: '600', color: '#1F2937' },
+  links:            { flexDirection: 'row', alignItems: 'center' },
+  linkText:         { color: '#4B5563', marginHorizontal: 12, fontSize: 16 },
+  menuWrap:         {
+                      position: 'relative',
+                      overflow: 'visible',
+                    },
+  dropdown:         {
+                      position: 'absolute',
+                      top: Platform.OS === 'ios' ? 36 : 40,
+                      right: 0,
+                      backgroundColor: 'white',
+                      borderRadius: 8,
+                      shadowColor: '#000',
+                      shadowOpacity: 0.1,
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowRadius: 4,
+                      elevation: 10,
+                      zIndex: 100,
+                      minWidth: 140,          // kesecek kadar genişlik
+                    },
+  dropdownItem:     { paddingVertical: 8, paddingHorizontal: 12 },
+  dropdownText:     { fontSize: 16, color: '#374151' },
+  hero:             { width: '100%', height: 300, justifyContent: 'center' },
+  overlay:          { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(31,41,55,0.5)' },
+  heroContent:      { marginLeft: 16 },
+  heroTitle:        { color: 'white', fontSize: 32, fontWeight: '700' },
+  heroSubtitle:     { color: 'white', fontSize: 18, marginTop: 4 },
+  sectionContainer: { paddingVertical: 24 },
+  section:          { marginBottom: 16, paddingHorizontal: 12 },
+  card:             { width: '100%', height: 200, borderRadius: 12, overflow: 'hidden', justifyContent: 'flex-end' },
+  cardOverlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
+  cardContent:      { padding: 16 },
+  cardTitle:        { color: 'white', fontSize: 20, fontWeight: '600' },
+  cardDesc:         { color: 'white', fontSize: 14, marginVertical: 8 },
+  cardBtn:          { alignSelf: 'flex-start', backgroundColor: 'rgb(20,20,65)', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 25 },
+  btnText:          { color: 'white', fontSize: 16 },
+  footer:           { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 16, backgroundColor: 'rgb(20,20,65)' },
+  icon:             { width: 30, height: 30, marginHorizontal: 8 },
+  copy:             { color: 'white', fontSize: 14 },
 });
