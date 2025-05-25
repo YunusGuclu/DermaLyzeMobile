@@ -15,6 +15,7 @@ Yapay zeka sunucusunu çalıştırın
 Başka bir terminal penceresinde proje kök dizinindeki server klasörüne geçip şu komutu yürütün:
 
 cd server
+
 python app.py
 
 Önemli: app.py dosyası çalıştırılmadığı takdirde uygulamanın yapay zeka özellikleri devre dışı kalır ve model tahminleri gerçekleşmez.
